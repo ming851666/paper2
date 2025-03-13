@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .content-container {
+            width: 50%;
+            border: 1px solid #ccc;
+            position: relative; /* 为背景图设置定位 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .content {
+            /* 去掉背景色，使背景图显示 */
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            /* 确保内容在背景图之上 */
+            position: relative;
+            z-index: 2;
+        }
+
+        .image-container {
+            width: 98%;
+            height: 100px;
+            margin: 1% 1%;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+        }
+
+        .initial-image-container {
+            width: 98%;
+            height: 12%;
+            margin: 1% 1%;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .initial-image-container img {
+            width: 100%;
+            object-fit: fill;
+        }
+
+        .markdown-editor {
+            width: 98%;
+            margin: 1% 1%;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .markdown-editor textarea {
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+            margin-bottom: 10px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .markdown-preview {
+            width: 98%;
+            margin: 1% 1%;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            min-height: 100px;
+            overflow-y: auto;
+        }
+
+        .edit-container {
+            width: 50%;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+        }
+
+        .quantity-input {
+            width: 10%;
+            margin-bottom: 10px;
+        }
+
+        .confirm-button,
+        .hide-editor-button,
+        .generate-button,
+        .generate-header-button,
+        .generate-background-button,
+        .export-button {
+            padding: 5px 10px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+
+        .dropdown-container,
+        .header-container,
+        .background-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .dropdown,
+        .header-input,
+        .background-input {
+            margin-right: 10px;
+            padding: 5px;
+        }
+
+        .content-input,
+        .header-input,
+        .background-input {
+            margin-right: 10px;
+            padding: 5px;
+            flex-grow: 1;
+        }
+    </style>
+    <title>9:16 Aspect Ratio Container with Image and Editor</title>
+</head>
+
+<body>
+    <div class="container-wrapper">
+        <div class="content-container">
+            <div class="content" id="content">
+                <div class="initial-image-container">
+                    <img src="https://img.alicdn.com/tfs/TB1XjyQaLrJ8KJjSspaXXXnFXXa-2400-1200.jpg" alt="Sample Image" crossOrigin="anonymous">
+                </div>
+            </div>
+        </div>
+        <div class="edit-container">
+            <!-- 在数量输入框上方增加说明文字 -->
+            <p>请输入内容有几个小点，生成对应的要点款：</p>
+            <input type="text" class="quantity-input" id="quantity-input" placeholder="数量">
+            <button class="confirm-button" id="confirm-button">确定</button>
+            <button class="hide-editor-button" id="hide-editor-button">隐藏 Markdown 编辑器</button>
+
+            <!-- 在生成头图和头部内容输入框上方增加说明文字 -->
+            <p>只需要输入头图文字即可生成海报头图：</p>
+            <div class="header-container">
+                <input type="text" class="header-input" id="header-content-input" placeholder="头部内容输入">
+                <button class="generate-header-button" id="generate-header-button">生成头图</button>
+            </div>
+
+            <!-- 在内容输入框上方增加说明文字 -->
+            <p>输入对应小标题，选择图几，即可给对应的图框生成小标题：</p>
+            <div class="dropdown-container">
+                <select class="dropdown" id="image-dropdown"></select>
+                <input type="text" class="content-input" id="content-input" placeholder="内容输入">
+                <button class="generate-button" id="generate-button">生成</button>
+            </div>
+
+            <!-- 增加生成背景图的功能 -->
+            <div class="background-container">
+                <input type="text" class="background-input" id="background-content-input" placeholder="背景图生成，不输入则随机生成">
+                <button class="generate-background-button" id="generate-background-button">生成背景图</button>
+            </div>
+
+            <button class="export-button" id="export-button">导出</button>
+
+            <h2>Edit Container</h2>
+            <p>This is a new container next to the original one.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const confirmButton = document.getElementById('confirm-button');
+            const hideEditorButton = document.getElementById('hide-editor-button');
+            const content = document.getElementById('content');
+            const imageDropdown = document.getElementById('image-dropdown');
+            const contentInput = document.getElementById('content-input');
+            const generateButton = document.getElementById('generate-button');
+            const headerContentInput = document.getElementById('header-content-input');
+            const generateHeaderButton = document.getElementById('generate-header-button');
+            const exportButton = document.getElementById('export-button');
+            const backgroundContentInput = document.getElementById('background-content-input');
+            const generateBackgroundButton = document.getElementById('generate-background-button');
+
+            // 工作流 API 配置
+            const workflowApiUrl = 'https://api.coze.cn/v1/workflow/run';
+            const workflowToken = 'pat_gI8v9IBhoFPjKIPSQjgf6An75USA9VKioJEHp0kxvGPu5klpQwTOd9Xdfa2maWlZ';
+            const workflowIdForHeader = '7480811912243249206';
+            const workflowIdForGenerate = '7480862433005027363';
+            const workflowIdForBackground = '7481107445452914697';
+
+            // 点击确定按钮生成图片和编辑器
+            confirmButton.addEventListener('click', function () {
+                console.log("Button clicked");
+
+                const quantityInput = document.getElementById('quantity-input');
+                const quantity = parseInt(quantityInput.value);
+
+                if (isNaN(quantity) || quantity <= 0) {
+                    alert("请输入一个有效的数字");
+                    return;
+                }
+
+                console.log(`Quantity: ${quantity}`);
+
+                // 清除之前的图片展示框（除了第一个）
+                const existingImages = content.querySelectorAll('.image-container');
+                existingImages.forEach(image => image.remove());
+
+                // 清除之前的Markdown编辑器和预览器
+                const existingEditors = content.querySelectorAll('.markdown-editor');
+                existingEditors.forEach(editor => editor.remove());
+                const existingPreviews = content.querySelectorAll('.markdown-preview');
+                existingPreviews.forEach(preview => preview.remove());
+
+                // 清除并重新填充下拉选项
+                imageDropdown.innerHTML = '';
+                // 下拉选项的数量与用户输入的数量一致
+                for (let i = 0; i < quantity; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.text = `图 ${i + 1}`;
+                    imageDropdown.appendChild(option);
+                }
+
+                for (let i = 0; i < quantity; i++) {
+                    // 创建新的图片展示框
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-container';
+                    const img = document.createElement('img');
+                    img.src = "https://img.alicdn.com/tfs/TB1XjyQaLrJ8KJjSspaXXXnFXXa-2400-1200.jpg";
+                    img.alt = `Sample Image ${i + 1}`;
+                    img.crossOrigin = "anonymous";
+                    imageContainer.appendChild(img);
+                    content.appendChild(imageContainer);
+
+                    // 创建新的Markdown编辑器
+                    const markdownEditorDiv = document.createElement('div');
+                    markdownEditorDiv.className = 'markdown-editor';
+                    markdownEditorDiv.innerHTML = `<textarea id="markdown-editor-${i}" placeholder="在这里输入Markdown内容..."></textarea>`;
+                    content.appendChild(markdownEditorDiv);
+
+                    // 创建新的Markdown预览器
+                    const markdownPreviewDiv = document.createElement('div');
+                    markdownPreviewDiv.className = 'markdown-preview';
+                    markdownPreviewDiv.id = `markdown-preview-${i}`;
+                    markdownPreviewDiv.innerHTML = marked.parse(`# Sample Markdown Preview\nThis is sample text for Markdown preview number **${i + 1}**.`);
+                    content.appendChild(markdownPreviewDiv);
+
+                    // 添加实时预览功能
+                    const editorTextarea = document.getElementById(`markdown-editor-${i}`);
+                    const previewDiv = document.getElementById(`markdown-preview-${i}`);
+
+                    editorTextarea.addEventListener('input', function () {
+                        const markdownContent = editorTextarea.value;
+                        previewDiv.innerHTML = marked.parse(markdownContent);
+                    });
+                }
+            });
+
+            // 点击隐藏/展示 Markdown 编辑器按钮
+            let isEditorHidden = false;
+            hideEditorButton.addEventListener('click', function () {
+                const editors = content.querySelectorAll('.markdown-editor');
+                if (isEditorHidden) {
+                    // 展示编辑器
+                    editors.forEach(editor => {
+                        editor.style.display = 'block';
+                    });
+                    hideEditorButton.textContent = '隐藏 Markdown 编辑器';
+                } else {
+                    // 隐藏编辑器
+                    editors.forEach(editor => {
+                        editor.style.display = 'none';
+                    });
+                    hideEditorButton.textContent = '展示 Markdown 编辑器';
+                }
+                isEditorHidden = !isEditorHidden;
+            });
+
+            // 点击生成按钮
+            generateButton.addEventListener('click', function () {
+                console.log("Generate content");
+
+                const selectedImageIndex = parseInt(imageDropdown.value);
+                const inputContent = contentInput.value;
+
+                if (isNaN(selectedImageIndex) || inputContent === '') {
+                    alert("请选择分项并输入内容");
+                    return;
+                }
+
+                // 显示加载状态
+                generateButton.textContent = '加载中...';
+                generateButton.disabled = true;
+
+                // 调用工作流 API
+                fetch(workflowApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${workflowToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workflow_id: workflowIdForGenerate,
+                        parameters: {
+                            input: inputContent
+                        }
+                    })
+                })
+                   .then(response => response.json())
+                   .then(data => {
+                        console.log("Workflow API response:", data);
+                        // 恢复按钮状态
+                        generateButton.textContent = '生成';
+                        generateButton.disabled = false;
+
+                        if (data.code === 0 && data.data) {
+                            // 提取图片链接
+                            const outputData = JSON.parse(data.data);
+                            const imageUrl = outputData.output.replace(/<url[^>]*>([^<]+)<\/url>/, '$1').trim();
+
+                            if (imageUrl) {
+                                // 在选中的图片展示框中更新图片
+                                const imageContainers = content.querySelectorAll('.image-container');
+                                if (imageContainers.length > selectedImageIndex) {
+                                    const selectedImageContainer = imageContainers[selectedImageIndex];
+                                    const img = selectedImageContainer.querySelector('img');
+                                    img.src = imageUrl;
+                                    img.alt = "Generated Image";
+                                }
+                            } else {
+                                alert("工作流 API 返回结果中不包含有效的图片链接");
+                            }
+                        } else {
+                            alert("工作流 API 调用失败");
+                        }
+                    })
+                   .catch(error => {
+                        console.error("Error calling workflow API:", error);
+                        // 恢复按钮状态
+                        generateButton.textContent = '生成';
+                        generateButton.disabled = false;
+                        alert("调用工作流 API 失败");
+                    });
+            });
+
+            // 点击生成头图按钮
+            generateHeaderButton.addEventListener('click', function () {
+                console.log("Generate header image");
+
+                const headerContent = headerContentInput.value;
+
+                if (headerContent === '') {
+                    alert("请输入头部内容");
+                    return;
+                }
+
+                // 显示加载状态
+                generateHeaderButton.textContent = '加载中...';
+                generateHeaderButton.disabled = true;
+
+                // 调用工作流 API
+                fetch(workflowApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${workflowToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workflow_id: workflowIdForHeader,
+                        parameters: {
+                            input: headerContent
+                        }
+                    })
+                })
+                   .then(response => response.json())
+                   .then(data => {
+                        console.log("Workflow API response:", data);
+                        // 恢复按钮状态
+                        generateHeaderButton.textContent = '生成头图';
+                        generateHeaderButton.disabled = false;
+
+                        if (data.code === 0 && data.data) {
+                            // 提取图片链接
+                            const outputData = JSON.parse(data.data);
+                            const imageUrl = outputData.output.replace(/<url[^>]*>([^<]+)<\/url>/, '$1').trim();
+
+                            if (imageUrl) {
+                                // 更新第一个图片展示框的图片
+                                const initialImageContainer = content.querySelector('.initial-image-container');
+                                if (initialImageContainer) {
+                                    const img = initialImageContainer.querySelector('img');
+                                    img.src = imageUrl;
+                                    img.alt = "Generated Header Image";
+                                }
+                            } else {
+                                alert("工作流 API 返回结果中不包含有效的图片链接");
+                            }
+                        } else {
+                            alert("工作流 API 调用失败");
+                        }
+                    })
+                   .catch(error => {
+                        console.error("Error calling workflow API:", error);
+                        // 恢复按钮状态
+                        generateHeaderButton.textContent = '生成头图';
+                        generateHeaderButton.disabled = false;
+                        alert("调用工作流 API 失败");
+                    });
+            });
+
+            // 点击生成背景图按钮
+            generateBackgroundButton.addEventListener('click', function () {
+                console.log("Generate background image");
+
+                const backgroundContent = backgroundContentInput.value;
+
+                // 显示加载状态
+                generateBackgroundButton.textContent = '加载中...';
+                generateBackgroundButton.disabled = true;
+
+                // 调用工作流 API
+                fetch(workflowApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${workflowToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workflow_id: workflowIdForBackground,
+                        parameters: {
+                            input: backgroundContent
+                        }
+                    })
+                })
+                   .then(response => response.json())
+                   .then(data => {
+                        console.log("Workflow API response:", data);
+                        // 恢复按钮状态
+                        generateBackgroundButton.textContent = '生成背景图';
+                        generateBackgroundButton.disabled = false;
+
+                        if (data.code === 0 && data.data) {
+                            // 提取图片链接
+                            const outputData = JSON.parse(data.data);
+                            const imageUrl = outputData.output.replace(/<url[^>]*>([^<]+)<\/url>/, '$1').trim();
+
+                            if (imageUrl) {
+                                // 设置背景图
+                                const contentContainer = document.querySelector('.content-container');
+                                contentContainer.style.backgroundImage = `url(${imageUrl})`;
+                                contentContainer.style.backgroundSize = 'cover';
+                                contentContainer.style.backgroundPosition = 'center';
+                                contentContainer.style.backgroundRepeat = 'no-repeat';
+                            } else {
+                                alert("工作流 API 返回结果中不包含有效的图片链接");
+                            }
+                        } else {
+                            alert("工作流 API 调用失败");
+                        }
+                    })
+                   .catch(error => {
+                        console.error("Error calling workflow API:", error);
+                        // 恢复按钮状态
+                        generateBackgroundButton.textContent = '生成背景图';
+                        generateBackgroundButton.disabled = false;
+                        alert("调用工作流 API 失败");
+                    });
+            });
+
+            // 点击导出按钮
+            exportButton.addEventListener('click', function () {
+                const contentContainer = document.querySelector('.content-container');
+                const images = contentContainer.querySelectorAll('img');
+                let loadedImages = 0;
+                let hasError = false;
+
+                function checkAllImagesLoaded() {
+                    if (loadedImages === images.length) {
+                        if (hasError) {
+                            alert('部分图片加载失败，可能会影响截图效果，请检查图片链接。');
+                        }
+                        html2canvas(contentContainer, {
+                            allowTaint: true,
+                            useCORS: true
+                        }).then(canvas => {
+                            canvas.toBlob(blob => {
+                                saveAs(blob, 'content_container_screenshot.png');
+                            });
+                        }).catch(error => {
+                            console.error('Error capturing screenshot:', error);
+                            alert('截图失败，请检查图片链接和网络连接');
+                        });
+                    }
+                }
+
+                images.forEach(img => {
+                    if (img.complete) {
+                        loadedImages++;
+                        checkAllImagesLoaded();
+                    } else {
+                        img.addEventListener('load', () => {
+                            loadedImages++;
+                            checkAllImagesLoaded();
+                        });
+                        img.addEventListener('error', () => {
+                            console.error('Image failed to load:', img.src);
+                            hasError = true;
+                            loadedImages++;
+                            checkAllImagesLoaded();
+                        });
+                    }
+                });
+
+                if (images.length === 0) {
+                    html2canvas(contentContainer, {
+                        allowTaint: true,
+                        useCORS: true
+                    }).then(canvas => {
+                        canvas.toBlob(blob => {
+                            saveAs(blob, 'content_container_screenshot.png');
+                        });
+                    }).catch(error => {
+                        console.error('Error capturing screenshot:', error);
+                        alert('截图失败，请检查图片链接和网络连接');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
