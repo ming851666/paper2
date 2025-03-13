@@ -24,18 +24,16 @@
         .content-container {
             width: 50%;
             border: 1px solid #ccc;
-            position: relative; /* 为背景图设置定位 */
+            position: relative;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }
 
         .content {
-            /* 去掉背景色，使背景图显示 */
             overflow-y: auto;
             padding: 20px;
             box-sizing: border-box;
-            /* 确保内容在背景图之上 */
             position: relative;
             z-index: 2;
         }
@@ -123,7 +121,10 @@
         .generate-button,
         .generate-header-button,
         .generate-background-button,
-        .export-button {
+        .export-button,
+        .upload-header-button,
+        .upload-image-button,
+        .export-card-button {
             padding: 5px 10px;
             cursor: pointer;
             margin: 5px 0;
@@ -131,7 +132,9 @@
 
         .dropdown-container,
         .header-container,
-        .background-container {
+        .background-container,
+        .upload-header-container,
+        .upload-image-container {
             display: flex;
             align-items: center;
             margin: 10px 0;
@@ -139,7 +142,8 @@
 
         .dropdown,
         .header-input,
-        .background-input {
+        .background-input,
+        .file-input {
             margin-right: 10px;
             padding: 5px;
         }
@@ -165,20 +169,22 @@
             </div>
         </div>
         <div class="edit-container">
-            <!-- 在数量输入框上方增加说明文字 -->
             <p>请输入内容有几个小点，生成对应的要点款：</p>
             <input type="text" class="quantity-input" id="quantity-input" placeholder="数量">
             <button class="confirm-button" id="confirm-button">确定</button>
             <button class="hide-editor-button" id="hide-editor-button">隐藏 Markdown 编辑器</button>
 
-            <!-- 在生成头图和头部内容输入框上方增加说明文字 -->
             <p>只需要输入头图文字即可生成海报头图：</p>
             <div class="header-container">
                 <input type="text" class="header-input" id="header-content-input" placeholder="头部内容输入">
                 <button class="generate-header-button" id="generate-header-button">生成头图</button>
             </div>
 
-            <!-- 在内容输入框上方增加说明文字 -->
+            <div class="upload-header-container">
+                <input type="file" class="file-input" id="upload-header-input" accept="image/*">
+                <button class="upload-header-button" id="upload-header-button">上传头图</button>
+            </div>
+
             <p>输入对应小标题，选择图几，即可给对应的图框生成小标题：</p>
             <div class="dropdown-container">
                 <select class="dropdown" id="image-dropdown"></select>
@@ -186,13 +192,18 @@
                 <button class="generate-button" id="generate-button">生成</button>
             </div>
 
-            <!-- 增加生成背景图的功能 -->
+            <div class="upload-image-container">
+                <input type="file" class="file-input" id="upload-image-input" accept="image/*">
+                <button class="upload-image-button" id="upload-image-button">上传图片</button>
+            </div>
+
             <div class="background-container">
                 <input type="text" class="background-input" id="background-content-input" placeholder="背景图生成，不输入则随机生成">
                 <button class="generate-background-button" id="generate-background-button">生成背景图</button>
             </div>
 
             <button class="export-button" id="export-button">导出</button>
+            <button class="export-card-button" id="export-card-button">导出卡片</button>
 
             <h2>Edit Container</h2>
             <p>This is a new container next to the original one.</p>
@@ -215,6 +226,11 @@
             const exportButton = document.getElementById('export-button');
             const backgroundContentInput = document.getElementById('background-content-input');
             const generateBackgroundButton = document.getElementById('generate-background-button');
+            const uploadHeaderInput = document.getElementById('upload-header-input');
+            const uploadHeaderButton = document.getElementById('upload-header-button');
+            const uploadImageInput = document.getElementById('upload-image-input');
+            const uploadImageButton = document.getElementById('upload-image-button');
+            const exportCardButton = document.getElementById('export-card-button');
 
             // 工作流 API 配置
             const workflowApiUrl = 'https://api.coze.cn/v1/workflow/run';
@@ -249,7 +265,6 @@
 
                 // 清除并重新填充下拉选项
                 imageDropdown.innerHTML = '';
-                // 下拉选项的数量与用户输入的数量一致
                 for (let i = 0; i < quantity; i++) {
                     const option = document.createElement('option');
                     option.value = i;
@@ -278,7 +293,7 @@
                     const markdownPreviewDiv = document.createElement('div');
                     markdownPreviewDiv.className = 'markdown-preview';
                     markdownPreviewDiv.id = `markdown-preview-${i}`;
-                    markdownPreviewDiv.innerHTML = marked.parse(`# 请在上方文本编辑器输入内容，支持markdown格式，编辑完成点击右边的隐藏markdown编辑器即可，使用愉快！\nThis is sample text for Markdown preview number **${i + 1}**.`);
+                    markdownPreviewDiv.innerHTML = marked.parse(`# 请在上方内容框中输入对应的内容，支持markdown格式\nThis is sample text for Markdown preview number **${i + 1}**.`);
                     content.appendChild(markdownPreviewDiv);
 
                     // 添加实时预览功能
@@ -297,13 +312,11 @@
             hideEditorButton.addEventListener('click', function () {
                 const editors = content.querySelectorAll('.markdown-editor');
                 if (isEditorHidden) {
-                    // 展示编辑器
                     editors.forEach(editor => {
                         editor.style.display = 'block';
                     });
                     hideEditorButton.textContent = '隐藏 Markdown 编辑器';
                 } else {
-                    // 隐藏编辑器
                     editors.forEach(editor => {
                         editor.style.display = 'none';
                     });
@@ -517,7 +530,10 @@
                         }
                         html2canvas(contentContainer, {
                             allowTaint: true,
-                            useCORS: true
+                            useCORS: true,
+                            scale: 2, // 设置截图比例
+                            scrollX: 0,
+                            scrollY: 0
                         }).then(canvas => {
                             canvas.toBlob(blob => {
                                 saveAs(blob, 'content_container_screenshot.png');
@@ -550,7 +566,10 @@
                 if (images.length === 0) {
                     html2canvas(contentContainer, {
                         allowTaint: true,
-                        useCORS: true
+                        useCORS: true,
+                        scale: 2, // 设置截图比例
+                        scrollX: 0,
+                        scrollY: 0
                     }).then(canvas => {
                         canvas.toBlob(blob => {
                             saveAs(blob, 'content_container_screenshot.png');
@@ -561,6 +580,130 @@
                     });
                 }
             });
+
+            // 点击上传头图按钮
+            uploadHeaderButton.addEventListener('click', function () {
+                uploadHeaderInput.click();
+            });
+
+            // 处理头图上传
+            uploadHeaderInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const initialImageContainer = content.querySelector('.initial-image-container');
+                        if (initialImageContainer) {
+                            const img = initialImageContainer.querySelector('img');
+                            img.src = e.target.result;
+                            img.alt = "Uploaded Header Image";
+                        }
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+
+            // 点击上传图片按钮
+            uploadImageButton.addEventListener('click', function () {
+                uploadImageInput.click();
+            });
+
+            // 处理图片上传
+            uploadImageInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const selectedImageIndex = parseInt(imageDropdown.value);
+                        const imageContainers = content.querySelectorAll('.image-container');
+                        if (!isNaN(selectedImageIndex) && imageContainers.length > selectedImageIndex) {
+                            const selectedImageContainer = imageContainers[selectedImageIndex];
+                            const img = selectedImageContainer.querySelector('img');
+                            img.src = e.target.result;
+                            img.alt = "Uploaded Image";
+                        } else {
+                            alert("请选择要上传图片的图几");
+                        }
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+
+           // 点击导出卡片按钮
+exportCardButton.addEventListener('click', function () {
+    const contentContainer = document.querySelector('.content-container');
+    const elements = contentContainer.querySelectorAll('.initial-image-container, .image-container, .markdown-preview');
+    let cardContent = '';
+    let processingIndex = 0;
+
+    function processNextElement() {
+        if (processingIndex >= elements.length) {
+            copyToClipboard(cardContent);
+            return;
+        }
+
+        const element = elements[processingIndex];
+        processingIndex++;
+
+        if (element.classList.contains('initial-image-container') || element.classList.contains('image-container')) {
+            const img = element.querySelector('img');
+            if (!img || !img.src) {
+                processNextElement();
+                return;
+            }
+
+            // 过滤无效的默认占位图
+            if (img.src.includes('alicdn.com/tfs/TB1XjyQaLrJ8KJjSspa')) {
+                processNextElement();
+                return;
+            }
+
+            if (img.src.startsWith('data:image')) {
+                cardContent += `![图 ${processingIndex}](${img.src})\n\n`;
+                processNextElement();
+                return;
+            }
+
+            const newImg = new Image();
+            newImg.crossOrigin = 'Anonymous';
+            newImg.onload = function () {
+                const canvas = document.createElement('canvas');
+                canvas.width = newImg.width;
+                canvas.height = newImg.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(newImg, 0, 0);
+                const base64 = canvas.toDataURL('image/png');
+                cardContent += `![图 ${processingIndex}](${base64})\n\n`;
+                processNextElement();
+            };
+            newImg.onerror = function () {
+                // 即使图片加载失败，也要继续处理下一个元素
+                processNextElement();
+            };
+            newImg.src = img.src;
+        } else if (element.classList.contains('markdown-preview')) {
+            // 找到对应的编辑器
+            const editor = element.previousElementSibling.querySelector('textarea');
+            if (editor) {
+                const markdownContent = editor.value;
+                cardContent += markdownContent + '\n\n';
+                processNextElement();
+            } else {
+                processNextElement();
+            }
+        }
+    }
+
+    processNextElement();
+
+    function copyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text.replace(/<[^>]*>?/gm, ''); // 清除HTML标签
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('卡片内容已复制到剪贴板！');
+    }
+});
         });
     </script>
 </body>
