@@ -278,7 +278,7 @@
                     const markdownPreviewDiv = document.createElement('div');
                     markdownPreviewDiv.className = 'markdown-preview';
                     markdownPreviewDiv.id = `markdown-preview-${i}`;
-                    markdownPreviewDiv.innerHTML = marked.parse(`# Sample Markdown Preview\nThis is sample text for Markdown preview number **${i + 1}**.`);
+                    markdownPreviewDiv.innerHTML = marked.parse(`# 请在上方文本编辑器输入内容，支持markdown格式，编辑完成点击右边的隐藏markdown编辑器即可，使用愉快！\nThis is sample text for Markdown preview number **${i + 1}**.`);
                     content.appendChild(markdownPreviewDiv);
 
                     // 添加实时预览功能
